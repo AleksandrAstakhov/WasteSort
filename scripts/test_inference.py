@@ -11,9 +11,7 @@ from waste_sort.inference.predictor import Predictor
 def test_pytorch_inference():
     print("Testing PyTorch Inference...\n")
 
-    predictor = Predictor(
-        checkpoint_path="artifacts/checkpoints/efficientnet-best.ckpt"
-    )
+    predictor = Predictor(checkpoint_path="artifacts/checkpoints/efficientnet-best.ckpt")
 
     test_img = Path("data/raw/paper/paper1.jpg")
     if test_img.exists():

@@ -3,14 +3,12 @@ from __future__ import annotations
 import pytest
 import torch
 
-from waste_sort.data.dataset import (CLASSES, get_train_transforms,
-                                     get_val_transforms)
+from waste_sort.data.dataset import CLASSES, get_train_transforms, get_val_transforms
 from waste_sort.models.baseline import BaselineResNet18
 from waste_sort.models.efficientnet import EfficientNetB2
 
 
 class TestModels:
-
     @pytest.fixture
     def dummy_input(self) -> torch.Tensor:
         return torch.randn(2, 3, 224, 224)
@@ -45,7 +43,6 @@ class TestModels:
 
 
 class TestTransforms:
-
     def test_train_transforms(self) -> None:
         import numpy as np
 
@@ -64,7 +61,6 @@ class TestTransforms:
 
 
 class TestClassMapping:
-
     def test_twelve_classes(self) -> None:
         assert len(CLASSES) == 12
 

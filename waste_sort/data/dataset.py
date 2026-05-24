@@ -53,7 +53,6 @@ def get_val_transforms(image_size: int = 224) -> A.Compose:
 
 
 class WasteDataset(Dataset):
-
     def __init__(
         self,
         image_paths: list[Path],

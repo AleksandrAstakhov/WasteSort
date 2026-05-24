@@ -43,9 +43,7 @@ def test_triton():
             print(f"{img_path.name}: file not found")
             continue
 
-
         img_array = preprocess_image(img_path)
-
 
         request = {
             "inputs": [
@@ -79,17 +77,15 @@ def test_triton():
 
                 is_correct = predicted_class == expected
                 status = "ок" if is_correct else "not ok"
-                print(
-                    f"{status} {img_path.name:25}  {predicted_class:12} ({confidence:.4f})"
-                )
+                print(f"{status} {img_path.name:25}  {predicted_class:12} ({confidence:.4f})")
                 if is_correct:
                     correct += 1
             else:
                 print(f"{img_path.name}: HTTP {response.status_code}")
 
         except requests.exceptions.ConnectionError:
-            print(f"Connection failed. Make sure Triton is running:")
-            print(f"   tritonserver --model-repository=$(pwd)/triton_repo")
+            print("Connection failed. Make sure Triton is running:")
+            print("   tritonserver --model-repository=$(pwd)/triton_repo")
             return
         except Exception as e:
             print(f"{img_path.name}: {e}")

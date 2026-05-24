@@ -3,7 +3,6 @@
 
 import json
 import sys
-import time
 from pathlib import Path
 
 import numpy as np
@@ -20,7 +19,6 @@ except ImportError:
 
 
 def test_triton(model_name="waste_sort", url="localhost:8000"):
-
     with open("artifacts/class_map.json") as f:
         class_map = json.load(f)
     idx_to_class = {v: k for k, v in class_map.items()}
@@ -71,7 +69,7 @@ def test_triton(model_name="waste_sort", url="localhost:8000"):
         pred_idx = int(np.argmax(probs))
         confidence = float(probs[pred_idx])
 
-        print(f"\nTRITON INFERENCE SUCCESSFUL!")
+        print("\nTRITON INFERENCE SUCCESSFUL!")
         print(f"   Класс: {classes[pred_idx]}")
         print(f"   Уверенность: {confidence:.4f}")
         return True

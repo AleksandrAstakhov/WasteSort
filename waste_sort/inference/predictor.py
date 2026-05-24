@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import csv
@@ -27,7 +26,6 @@ def _preprocess_image(img_path: Path, image_size: int = 224) -> np.ndarray:
 
 
 class Predictor:
-
     def __init__(
         self,
         onnx_path: str | None = None,

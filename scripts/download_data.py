@@ -6,7 +6,6 @@ import json
 import os
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 
 
@@ -28,14 +27,12 @@ def setup_kaggle_token(token):
         json.dump(config, f)
 
     os.chmod(kaggle_config, 0o600)
-    print(f"Kaggle API token configured")
+    print("Kaggle API token configured")
     return True
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Download Kaggle garbage classification dataset"
-    )
+    parser = argparse.ArgumentParser(description="Download Kaggle garbage classification dataset")
     parser.add_argument("--token", type=str, help="Kaggle API token (username:api_key)")
     args = parser.parse_args()
 
@@ -99,7 +96,7 @@ def main():
         shutil.rmtree(dst)
 
     src.rename(dst)
-    print(f"Downloaded 12 classes")
+    print("Downloaded 12 classes")
 
     print("\n Consolidating 12 10 classes...")
 
@@ -121,16 +118,14 @@ def main():
         for img in src_battery.glob("*.jpg"):
             shutil.copy2(img, dst_unknown / img.name)
         shutil.rmtree(src_battery)
-        print(f"Mapped battery unknown")
+        print("Mapped battery unknown")
 
     classes = len(list(dst.iterdir()))
-    images = sum(
-        len(list((dst / d).glob("*.jpg"))) for d in dst.iterdir() if d.is_dir()
-    )
+    images = sum(len(list((dst / d).glob("*.jpg"))) for d in dst.iterdir() if d.is_dir())
 
     shutil.move(str(dst / "metal"), str(dst / "metals"))
 
-    print(f"\nDataset ready!")
+    print("\nDataset ready!")
     print(f"   Classes: {classes} (consolidated from 12)")
     print(f"   Images: {images}")
 

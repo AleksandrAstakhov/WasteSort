@@ -11,7 +11,6 @@ from waste_sort.export.onnx_export import export_to_onnx
 
 
 def find_latest_checkpoint(checkpoint_dir: str = "artifacts/checkpoints") -> str:
-
     checkpoints_dir = Path(checkpoint_dir)
 
     versioned = list(checkpoints_dir.glob("efficientnet-best-v*.ckpt"))
@@ -46,7 +45,7 @@ def main():
         opset_version=17,
     )
 
-    print(f"ONNX model exported")
+    print("ONNX model exported")
 
     size_mb = os.path.getsize(onnx_path) / (1024 * 1024)
     print(f"   Path: {onnx_path}")

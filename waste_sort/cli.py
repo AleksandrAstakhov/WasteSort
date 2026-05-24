@@ -13,22 +13,32 @@ import sys
 from pathlib import Path
 
 import hydra
+import pandas as pd
+import pytorch_lightning as pl
 from omegaconf import DictConfig, OmegaConf
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_lightning.loggers import MLFlowLogger
+
+from waste_sort.data.datamodule import WasteDataModule
+from waste_sort.data.dataset import WasteDataset
+from waste_sort.export.onnx_export import export_to_onnx
+from waste_sort.inference.predictor import Predictor
+from waste_sort.mlflow_utils import (
+    end_run,
+    init_mlflow_run,
+    log_config,
+    log_data_preparation,
+    log_inference,
+    log_model_registry,
+    log_onnx_export,
+    log_triton_repo_build,
+)
+from waste_sort.serving.triton import build_triton_repo
+from waste_sort.training.module import WasteClassifier
+from waste_sort.utils import plot_metrics
 
 
 def _train(cfg: DictConfig) -> None:
-    import pytorch_lightning as pl
-    from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
-    from pytorch_lightning.loggers import MLFlowLogger
-
-    from waste_sort.data.datamodule import WasteDataModule
-    from waste_sort.data.dataset import WasteDataset
-    from waste_sort.mlflow_utils import (end_run, init_mlflow_run, log_config,
-                                         log_data_preparation,
-                                         log_model_registry)
-    from waste_sort.training.module import WasteClassifier
-    from waste_sort.utils import plot_metrics
-
     pl.seed_everything(cfg.seed, workers=True)
 
     run_id = init_mlflow_run(
@@ -117,7 +127,7 @@ def _train(cfg: DictConfig) -> None:
 
         plot_metrics(logger.run_id, cfg.mlflow.tracking_uri, cfg.model.name)
 
-        print(f"\nTraining completed!")
+        print("\nTraining completed!")
         print(f"Best checkpoint: {checkpoint_cb.best_model_path}")
         print(f"Best val/f1_macro: {checkpoint_cb.best_model_score:.4f}")
         print(f"MLflow run ID: {run_id}")
@@ -131,16 +141,10 @@ def _train(cfg: DictConfig) -> None:
 
 
 def _infer(cfg: DictConfig) -> None:
-    import pandas as pd
-
-    from waste_sort.inference.predictor import Predictor
-    from waste_sort.mlflow_utils import (end_run, init_mlflow_run, log_config,
-                                         log_inference)
-
     onnx_path = cfg.infer.get("onnx_path")
     ckpt_path = cfg.infer.get("checkpoint_path")
 
-    run_id = init_mlflow_run(
+    init_mlflow_run(
         tracking_uri=cfg.mlflow.tracking_uri,
         experiment_name=cfg.mlflow.experiment_name,
         run_name="inference",
@@ -165,9 +169,7 @@ def _infer(cfg: DictConfig) -> None:
 
         if Path(cfg.infer.output_csv).exists():
             df = pd.read_csv(cfg.infer.output_csv)
-            mean_confidence = (
-                df["confidence"].mean() if "confidence" in df.columns else 0.0
-            )
+            mean_confidence = df["confidence"].mean() if "confidence" in df.columns else 0.0
             log_inference(
                 predictions_csv=cfg.infer.output_csv,
                 num_predictions=len(df),
@@ -188,10 +190,6 @@ def _infer(cfg: DictConfig) -> None:
 
 
 def _export_onnx(cfg: DictConfig) -> None:
-    from waste_sort.export.onnx_export import export_to_onnx
-    from waste_sort.mlflow_utils import (end_run, init_mlflow_run, log_config,
-                                         log_onnx_export)
-
     run_id = init_mlflow_run(
         tracking_uri=cfg.mlflow.tracking_uri,
         experiment_name=cfg.mlflow.experiment_name,
@@ -227,10 +225,6 @@ def _export_onnx(cfg: DictConfig) -> None:
 
 
 def _build_triton_repo(cfg: DictConfig) -> None:
-    from waste_sort.mlflow_utils import (end_run, init_mlflow_run, log_config,
-                                         log_triton_repo_build)
-    from waste_sort.serving.triton import build_triton_repo
-
     run_id = init_mlflow_run(
         tracking_uri=cfg.mlflow.tracking_uri,
         experiment_name=cfg.mlflow.experiment_name,
@@ -293,7 +287,7 @@ def main(cfg: DictConfig) -> None:
                 break
 
     if command not in COMMANDS:
-        print(f"Usage: waste-sort <command> [overrides...]")
+        print("Usage: waste-sort <command> [overrides...]")
         print(f"Commands: {', '.join(COMMANDS.keys())}")
         sys.exit(1)
 

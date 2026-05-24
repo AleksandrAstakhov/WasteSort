@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys
+
+from waste_sort.cli import main
 
 original_add_argument = argparse.ArgumentParser.add_argument
 
@@ -19,7 +20,6 @@ def patched_add_argument(self, *args, **kwargs):
 
 argparse.ArgumentParser.add_argument = patched_add_argument
 
-from waste_sort.cli import main
 
 if __name__ == "__main__":
     main()

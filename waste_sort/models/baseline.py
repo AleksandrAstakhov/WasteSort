@@ -1,9 +1,8 @@
-
 from __future__ import annotations
 
+import torch
 import torch.nn as nn
 from torchvision import models
-import torch
 
 
 class BaselineResNet18(nn.Module):

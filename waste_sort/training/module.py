@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 from typing import Any
@@ -6,9 +5,11 @@ from typing import Any
 import pytorch_lightning as pl
 import torch
 import torch.nn as nn
-from torchmetrics.classification import (MulticlassAccuracy,
-                                         MulticlassConfusionMatrix,
-                                         MulticlassF1Score)
+from torchmetrics.classification import (
+    MulticlassAccuracy,
+    MulticlassConfusionMatrix,
+    MulticlassF1Score,
+)
 
 from waste_sort.data.dataset import CLASSES
 from waste_sort.models.baseline import BaselineResNet18
@@ -21,8 +22,6 @@ MODEL_REGISTRY: dict[str, type[nn.Module]] = {
 
 
 class WasteClassifier(pl.LightningModule):
-
-
     def __init__(
         self,
         model_name: str = "efficientnet",
@@ -39,9 +38,7 @@ class WasteClassifier(pl.LightningModule):
 
         model_cls = MODEL_REGISTRY[model_name]
         if model_name == "efficientnet":
-            self.model = model_cls(
-                num_classes=num_classes, pretrained=pretrained, dropout=dropout
-            )
+            self.model = model_cls(num_classes=num_classes, pretrained=pretrained, dropout=dropout)
         else:
             self.model = model_cls(num_classes=num_classes, pretrained=pretrained)
 
@@ -52,9 +49,7 @@ class WasteClassifier(pl.LightningModule):
         self.val_f1 = MulticlassF1Score(num_classes=num_classes, average="macro")
         self.test_acc = MulticlassAccuracy(num_classes=num_classes)
         self.test_f1 = MulticlassF1Score(num_classes=num_classes, average="macro")
-        self.test_f1_per_class = MulticlassF1Score(
-            num_classes=num_classes, average=None
-        )
+        self.test_f1_per_class = MulticlassF1Score(num_classes=num_classes, average=None)
         self.test_cm = MulticlassConfusionMatrix(num_classes=num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

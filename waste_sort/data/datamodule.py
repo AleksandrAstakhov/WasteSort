@@ -1,19 +1,16 @@
 from __future__ import annotations
 
 import json
-import random
 from pathlib import Path
 
 import pytorch_lightning as pl
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
-from waste_sort.data.dataset import (CLASSES, WasteDataset,
-                                     get_train_transforms, get_val_transforms)
+from waste_sort.data.dataset import CLASSES, WasteDataset, get_train_transforms, get_val_transforms
 
 
 class WasteDataModule(pl.LightningDataModule):
-
     def __init__(
         self,
         data_dir: str = "data/raw",

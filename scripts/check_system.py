@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import mlflow
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
@@ -31,9 +33,7 @@ def check_data():
     if Path("artifacts/split.json").exists():
         with open("artifacts/split.json") as f:
             split = json.load(f)
-            print(
-                f"Train/Val/Test: {len(split['train'])}/{len(split['val'])}/{len(split['test'])}"
-            )
+            print(f"Train/Val/Test: {len(split['train'])}/{len(split['val'])}/{len(split['test'])}")
     else:
         print("split.json not found")
 
@@ -42,8 +42,6 @@ def check_data():
 
 def check_checkpoints():
     print("\nMODEL CHECKPOINTS")
-
-    import torch
 
     models = [
         "artifacts/checkpoints/baseline-best.ckpt",
@@ -55,8 +53,7 @@ def check_checkpoints():
         path = Path(model_path)
         if path.exists():
             size_mb = path.stat().st_size / (1024 * 1024)
-            ckpt = torch.load(path, map_location="cpu")
-            num_classes = ckpt["hyper_parameters"].get("num_classes", "?")
+
             print(f"{path.name}: {size_mb:.0f}MB")
             found += 1
         else:
@@ -97,9 +94,7 @@ def check_inference():
             print(f"ONNX inference: {class_name} ({confidence:.4f})")
 
         # Test PyTorch
-        predictor = Predictor(
-            checkpoint_path="artifacts/checkpoints/efficientnet-best-v2.ckpt"
-        )
+        predictor = Predictor(checkpoint_path="artifacts/checkpoints/efficientnet-best-v2.ckpt")
         class_name, confidence = predictor.predict_one(test_img)
         print(f"PyTorch inference: {class_name} ({confidence:.4f})")
 
@@ -119,13 +114,11 @@ def check_triton():
             timeout=5,
         )
         if result.returncode == 0:
-            print(f"Triton server: Running")
+            print("Triton server: Running")
             return True
         else:
-            print(f"Triton server: Not running")
-            print(
-                f"Start with: tritonserver --model-repository=$(pwd)/triton_repo"
-            )
+            print("Triton server: Not running")
+            print("Start with: tritonserver --model-repository=$(pwd)/triton_repo")
             return False
     except Exception as e:
         print(f"Triton check failed: {e}")
@@ -136,15 +129,13 @@ def check_mlflow():
     print("\nMLFLOW TRACKING")
 
     try:
-        import mlflow
-
         mlflow.set_tracking_uri("http://127.0.0.1:8080")
         runs = mlflow.search_runs(experiment_names=["waste-sort"], max_results=3)
         print(f"MLflow: {len(runs)} training runs")
         return True
     except Exception as e:
         print(f"MLflow: {e}")
-        print(f"Start with: mlflow server --host 127.0.0.1 --port 8080")
+        print("Start with: mlflow server --host 127.0.0.1 --port 8080")
         return False
 
 
