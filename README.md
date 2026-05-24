@@ -123,31 +123,73 @@
 ## Setup (Настройка окружения)
 
 ### Требования
-- Python 3.14+
-- pip или другой менеджер пакетов
+- Python 3.10+
+- Poetry
 
-### Установка
+### Установка Poetry
+
+```bash
+# macOS/Linux
+curl -sSL https://install.python-poetry.org | python3 -
+
+# Или через pip
+pip install poetry
+
+# Проверить версию
+poetry --version
+```
+
+### Установка проекта
 
 ```bash
 # Клонировать репозиторий
 git clone <repo_url>
 cd WasteSort
 
-# Создать виртуальное окружение
-python3 -m venv venv
-source venv/bin/activate
-
 # Установить зависимости
-pip install -r requirements.txt
+poetry install
 
-# Опциональные зависимости
-pip install onnxscript onnx onnxruntime  # для ONNX
-pip install tritonclient                  # для Triton
+# Или с dev инструментами (черный, ruff, mypy, pre-commit)
+poetry install --with dev
+
+# Или с train зависимостями (mlflow, matplotlib, scikit-learn)
+poetry install --with train
+
+# Или всё вместе
+poetry install --with dev --with train
+
+# Активировать окружение Poetry
+poetry shell
+```
+
+### Инициализировать DVC (один раз)
+
+```bash
+# Создать локальное хранилище
+mkdir ../dvc-storage
+
+# Инициализировать DVC удалённые хранилища
+dvc remote add -d data-storage ../dvc-storage/data
+dvc remote add models-storage ../dvc-storage/models
+```
+
+### Инициализировать pre-commit (один раз)
+
+```bash
+# Установить git hooks
+pre-commit install
+
+# Проверить всё работает
+pre-commit run -a
 ```
 
 ### Конфигурация
 
-Основная конфигурация находится в `configs/config.yaml`. Используется Hydra для управления гиперпараметрами.
+Основная конфигурация находится в:
+- `pyproject.toml` — зависимости, инструменты (Poetry), черный, ruff, mypy
+- `configs/config.yaml` — гиперпараметры (Hydra)
+- `.dvc/config` — хранилища (DVC)
+- `.pre-commit-config.yaml` — линтинг и форматирование (pre-commit)
 
 ---
 
@@ -159,11 +201,11 @@ pip install tritonclient                  # для Triton
 
 ```bash
 # Вариант 1: через аргумент командной строки
-python3 scripts/download_data.py --token username:api_key
+poetry run python3 scripts/download_data.py --token username:api_key
 
 # Вариант 2: через переменную окружения
 export KAGGLE_API_TOKEN=username:api_key
-python3 scripts/download_data.py
+poetry run python3 scripts/download_data.py
 ```
 
 Скрипт:
@@ -171,31 +213,40 @@ python3 scripts/download_data.py
 - Автоматически консолидирует 12 классов в 10 (объединяет стеклянную посуду, переименовывает батарейки)
 - Сохраняет в `data/raw/`
 
-### 2. Запустить MLflow сервер (в отдельном терминале)
+### 2. Добавить данные в DVC
 
 ```bash
-mlflow server --host 127.0.0.1 --port 8080
+dvc add data/raw/
+git add data.dvc .gitignore
+git commit -m "Add dataset"
+dvc push -r data-storage
+```
+
+### 3. Запустить MLflow сервер (в отдельном терминале)
+
+```bash
+poetry run mlflow server --host 127.0.0.1 --port 8080
 ```
 
 После запуска доступен на http://127.0.0.1:8080
 
-### 3. Обучить модель
+### 4. Обучить модель
 
 ```bash
 # Baseline модель (ResNet-18), 1 эпоха (~2-5 минут)
-python3 run_training_patched.py ++command=train model=baseline train.max_epochs=1
+poetry run python3 run_training_patched.py ++command=train model=baseline train.max_epochs=1
 
 # Baseline модель, 10 эпох (~20 минут)
-python3 run_training_patched.py ++command=train model=baseline train.max_epochs=10
+poetry run python3 run_training_patched.py ++command=train model=baseline train.max_epochs=10
 
 # Основная модель (EfficientNet-B2), 1 эпоха (~5 минут)
-python3 run_training_patched.py ++command=train model=efficientnet train.max_epochs=1
+poetry run python3 run_training_patched.py ++command=train model=efficientnet train.max_epochs=1
 
 # Основная модель, 10 эпох (~50 минут)
-python3 run_training_patched.py ++command=train model=efficientnet train.max_epochs=10
+poetry run python3 run_training_patched.py ++command=train model=efficientnet train.max_epochs=10
 
 # С кастомными гиперпараметрами
-python3 run_training_patched.py ++command=train model=efficientnet \
+poetry run python3 run_training_patched.py ++command=train model=efficientnet \
   train.max_epochs=5 optim.lr=1e-4 train.batch_size=16
 ```
 
@@ -210,10 +261,10 @@ python3 run_training_patched.py ++command=train model=efficientnet \
 - `artifacts/checkpoints/baseline-best.ckpt` (ResNet-18)
 - `artifacts/checkpoints/efficientnet-best-v2.ckpt` (EfficientNet-B2)
 
-### 4. Проверить систему
+### 5. Проверить систему
 
 ```bash
-python3 scripts/check_system.py
+poetry run python3 scripts/check_system.py
 ```
 
 Проверяет:
@@ -224,6 +275,15 @@ python3 scripts/check_system.py
 - Статус Triton сервера (если запущен)
 - Интеграцию MLflow
 
+### 6. Сохранить модели в DVC
+
+```bash
+dvc add artifacts/checkpoints/ artifacts/model.onnx
+git add artifacts.dvc
+git commit -m "Add trained models"
+dvc push -r models-storage
+```
+
 ---
 
 ## Inference (Инференс)
@@ -232,17 +292,17 @@ python3 scripts/check_system.py
 
 ```bash
 # На папке с изображениями
-python3 run_training_patched.py ++command=infer \
+poetry run python3 run_training_patched.py ++command=infer \
   infer.input_dir=data/raw/biological \
   infer.output_csv=predictions.csv
 
 # С кастомным checkpoints
-python3 run_training_patched.py ++command=infer \
+poetry run python3 run_training_patched.py ++command=infer \
   infer.checkpoint_path=artifacts/checkpoints/baseline-best.ckpt \
   infer.input_dir=data/raw/biological
 
 # Быстрый тест на нескольких картинках
-python3 scripts/test_inference.py
+poetry run python3 scripts/test_inference.py
 ```
 
 **Выход:** `predictions.csv` с колонками:
@@ -256,10 +316,10 @@ data/raw/paper/paper1.jpg,paper,0.954
 
 ```bash
 # Экспортировать основную модель в ONNX (1.46 MB)
-python3 scripts/export_onnx.py
+poetry run python3 scripts/export_onnx.py
 
 # Тест ONNX инференса
-python3 scripts/test_inference.py
+poetry run python3 scripts/test_inference.py
 ```
 
 ONNX модель сохраняется в `artifacts/model.onnx`.
@@ -281,7 +341,7 @@ docker run --rm -p 8000:8000 -p 8001:8001 -p 8002:8002 \
 curl http://127.0.0.1:8000/v2/health/ready
 
 # Протестировать инференс
-python3 scripts/test_triton.py
+poetry run python3 scripts/test_triton.py
 ```
 
 Triton предоставляет HTTP API для масштабируемого инференса.
@@ -290,7 +350,11 @@ Triton предоставляет HTTP API для масштабируемого
 
 ```bash
 # После обучения и экспорта
-python3 scripts/export_onnx.py
+poetry run python3 scripts/export_onnx.py
+
+# Обнови модель в Triton
+cp artifacts/model.onnx triton_repo/waste_sort/1/model.onnx
+cp artifacts/model.onnx.data triton_repo/waste_sort/1/model.onnx.data
 
 # Скопировать в Triton
 cp artifacts/model.onnx triton_repo/waste_sort/1/model.onnx
@@ -341,20 +405,20 @@ docker run --rm -p 8000:8000 -p 8001:8001 -p 8002:8002 \
 ### Загрузить датасет
 
 ```bash
-python3 scripts/download_data.py --token username:api_key
-export KAGGLE_API_TOKEN=username:api_key && python3 scripts/download_data.py
+poetry run python3 scripts/download_data.py --token username:api_key
+export KAGGLE_API_TOKEN=username:api_key && poetry run python3 scripts/download_data.py
 ```
 
 ### Проверить систему
 
 ```bash
-python3 scripts/check_system.py
+poetry run python3 scripts/check_system.py
 ```
 
 ### Статистика датасета
 
 ```bash
-python3 scripts/show_data_stats.py
+poetry run python3 scripts/show_data_stats.py
 ```
 
 ### Открыть MLflow веб-интерфейс
@@ -366,7 +430,33 @@ open http://127.0.0.1:8080
 ### Проверить не-ASCII символы
 
 ```bash
-python3 scripts/check_non_ascii.py
+poetry run python3 scripts/check_non_ascii.py
+```
+
+### Быстрый тест pre-commit
+
+```bash
+# Проверить все файлы
+pre-commit run -a
+
+# Или конкретный инструмент
+pre-commit run black -a
+pre-commit run ruff -a
+```
+
+### Data Management (DVC)
+
+```bash
+# Скачать данные и модели
+dvc pull
+
+# Загрузить в хранилище
+dvc add data/raw/ artifacts/
+dvc push
+
+# Проверить статус
+dvc status
+dvc remote list
 ```
 
 ---
@@ -375,5 +465,5 @@ python3 scripts/check_non_ascii.py
 
 Status: Production Ready
 Updated: May 24, 2026
-Python: 3.14+
+Python: 3.10+
 Accuracy: 95.1%
