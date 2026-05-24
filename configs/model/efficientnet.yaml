@@ -1,0 +1,5 @@
+# Main model: EfficientNet-B2
+name: efficientnet
+num_classes: 10
+pretrained: true
+dropout: 0.3

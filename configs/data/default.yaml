@@ -1,0 +1,7 @@
+data_dir: "data/raw"
+image_size: 224
+num_workers: 4
+train_ratio: 0.70
+val_ratio: 0.15
+split_file: "artifacts/split.json"
+class_map_file: "artifacts/class_map.json"

@@ -1,0 +1,4 @@
+# Baseline: ResNet-18
+name: baseline
+num_classes: 10
+pretrained: true

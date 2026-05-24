@@ -1,0 +1,38 @@
+defaults:
+  - model: efficientnet
+  - data: default
+  - train: default
+  - _self_
+
+# Global
+seed: 42
+command: train
+
+# Optimizer
+optim:
+  lr: 3e-4
+  weight_decay: 0.01
+  label_smoothing: 0.1
+
+# MLflow
+mlflow:
+  tracking_uri: "http://127.0.0.1:8080"
+  experiment_name: "waste-sort"
+
+# Inference
+infer:
+  input_dir: "data/infer_samples"
+  output_csv: "predictions.csv"
+  onnx_path: "artifacts/model.onnx"
+  checkpoint_path: null
+
+# Export
+export:
+  checkpoint_path: "artifacts/checkpoints/efficientnet-best.ckpt"
+  onnx_path: "artifacts/model.onnx"
+
+# Serving
+serving:
+  triton_repo: "triton_repo"
+  model_name: "waste_sort"
+  max_batch_size: 8

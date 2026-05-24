@@ -1,0 +1,5 @@
+max_epochs: 50
+batch_size: 32
+patience: 7
+precision: "16-mixed"
+checkpoint_dir: "artifacts/checkpoints"

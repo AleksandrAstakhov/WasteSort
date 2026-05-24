@@ -1,0 +1,12 @@
+{
+  "biological": 0,
+  "cardboard": 1,
+  "clothes": 2,
+  "glass": 3,
+  "metals": 4,
+  "paper": 5,
+  "plastic": 6,
+  "shoes": 7,
+  "trash": 8,
+  "unknown": 9
+}

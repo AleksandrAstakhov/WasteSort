@@ -1,0 +1,7 @@
+stages:
+  get_data:
+    cmd: bash scripts/download_data.sh data/raw
+    deps:
+      - scripts/download_data.sh
+    outs:
+      - data/raw
