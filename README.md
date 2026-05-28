@@ -13,10 +13,12 @@
 ### Входные и выходные данные
 
 **Вход:**
+
 - Изображение в формате .jpg или .png
 - Модель принимает тензор формы [N, C, H, W] где C=3 (RGB), H=W=224
 
 **Выход:**
+
 - Вектор логитов формы [N, 10]
 - После softmax: вероятности по 10 классам
 - Финальный класс: argmax по вектору вероятностей
@@ -27,17 +29,18 @@
 
 ### Датасет
 
-| Параметр | Значение |
-|----------|----------|
-| Источник | [Kaggle: Garbage Classification](https://www.kaggle.com/datasets/mostafaabla/garbage-classification) (автор: Mostafa Abla) |
-| Размер | 15,515 изображений (~1.6 GB на диске) |
-| Классы | 10 (консолидировано из 12 оригинальных классов Kaggle) |
-| Разрешение | 512×384 до 3264×2448 пиксели |
-| Split | 70% train (10,860), 15% val (2,327), 15% test (2,328) |
-| Баланс | Сбалансирован (~1,550 изображений на класс) |
-| Лицензия | CC0 (Public Domain) |
+| Параметр   | Значение                                                                                                                   |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Источник   | [Kaggle: Garbage Classification](https://www.kaggle.com/datasets/mostafaabla/garbage-classification) (автор: Mostafa Abla) |
+| Размер     | 15,515 изображений (~1.6 GB на диске)                                                                                      |
+| Классы     | 10 (консолидировано из 12 оригинальных классов Kaggle)                                                                     |
+| Разрешение | 512×384 до 3264×2448 пиксели                                                                                               |
+| Split      | 70% train (10,860), 15% val (2,327), 15% test (2,328)                                                                      |
+| Баланс     | Сбалансирован (~1,550 изображений на класс)                                                                                |
+| Лицензия   | CC0 (Public Domain)                                                                                                        |
 
 **10 классов:**
+
 - biological (пищевые отходы)
 - cardboard (картон)
 - clothes (текстиль, одежда)
@@ -50,6 +53,7 @@
 - unknown (неклассифицированные - батарейки)
 
 **Потенциальные проблемы данных:**
+
 - Визуальное сходство категорий стекла
 - Умеренный дисбаланс классов
 - Разное качество и освещение фотографий
@@ -65,18 +69,21 @@
 5. **Per-class F1** — отдельные метрики для каждого из 10 классов
 
 **Ожидаемые значения:**
+
 - Baseline (ResNet-18): macro F1 ~ 0.85–0.88
 - Основная модель (EfficientNet-B2): macro F1 ~ 0.93–0.96
 
 ### Архитектуры
 
 **Baseline: ResNet-18**
+
 - Предобученные ImageNet веса
 - Fine-tuning всех слоёв
 - LR=1e-4, оптимизатор Adam, CrossEntropyLoss
 - 10–15 эпох для получения опорного результата
 
 **Основная модель: EfficientNet-B2**
+
 - Compound scaling (одновременное масштабирование глубины, ширины и разрешения)
 - Более эффективна по accuracy/FLOPs чем ResNet
 - Аугментации данных (RandomResizedCrop, HorizontalFlip, Normalize)
@@ -85,11 +92,13 @@
 ### Препроцессинг данных
 
 **Загрузка:**
+
 - Resize изображения до 256x256
 - Center crop до 224x224
 - Нормализация по ImageNet (mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 **Аугментации (только на train set):**
+
 - RandomResizedCrop(224, scale=(0.8, 1.0))
 - HorizontalFlip(p=0.5)
 - ColorJitter(brightness=0.2, contrast=0.2)
@@ -98,6 +107,7 @@
 ### Постобработка результатов
 
 Результаты инференса сохраняются в CSV с колонками:
+
 - Image_path: путь до изображения
 - predicted_class: предсказанный класс (название)
 - confidence: вероятность (значение после softmax для выбранного класса)
@@ -105,15 +115,18 @@
 ### Внедрение и deployment
 
 **Форматы моделей:**
+
 - PyTorch checkpoint (.ckpt): 128 MB для ResNet-18, 89 MB для EfficientNet-B2
 - ONNX (.onnx): 0.15 MB для ResNet-18, 1.46 MB для EfficientNet-B2 (61× сжатие)
 
 **Варианты инференса:**
+
 1. **CLI инференс** — прямое использование PyTorch checkpoints (см. команды ниже)
 2. **ONNX инференс** — легковесный формат для продакшена (~1.5 MB вместо 89 MB)
 3. **Triton Inference Server** — высокопроизводительный HTTP API для масштабирования
 
 **Ресурсы для инференса:**
+
 - Latency: ~50ms на одном изображении (GPU/CPU зависит)
 - Throughput: можно обрабатывать батчи из нескольких изображений
 - Память: ~300 MB для загрузки модели в память
@@ -123,6 +136,7 @@
 ## Setup (Настройка окружения)
 
 ### Требования
+
 - Python 3.10+
 - Poetry
 
@@ -186,6 +200,7 @@ pre-commit run -a
 ### Конфигурация
 
 Основная конфигурация находится в:
+
 - `pyproject.toml` — зависимости, инструменты (Poetry), черный, ruff, mypy
 - `configs/config.yaml` — гиперпараметры (Hydra)
 - `.dvc/config` — хранилища (DVC)
@@ -209,6 +224,7 @@ poetry run python3 scripts/download_data.py
 ```
 
 Скрипт:
+
 - Загружает 15,515 изображений с Kaggle
 - Автоматически консолидирует 12 классов в 10 (объединяет стеклянную посуду, переименовывает батарейки)
 - Сохраняет в `data/raw/`
@@ -234,23 +250,24 @@ poetry run mlflow server --host 127.0.0.1 --port 8080
 
 ```bash
 # Baseline модель (ResNet-18), 1 эпоха (~2-5 минут)
-poetry run python3 run_training_patched.py ++command=train model=baseline train.max_epochs=1
+poetry run python3 scripts/run_training_patched.py ++command=train model=baseline train.max_epochs=1
 
 # Baseline модель, 10 эпох (~20 минут)
-poetry run python3 run_training_patched.py ++command=train model=baseline train.max_epochs=10
+poetry run python3 scripts/run_training_patched.py ++command=train model=baseline train.max_epochs=10
 
 # Основная модель (EfficientNet-B2), 1 эпоха (~5 минут)
-poetry run python3 run_training_patched.py ++command=train model=efficientnet train.max_epochs=1
+poetry run python3 scripts/run_training_patched.py ++command=train model=efficientnet train.max_epochs=1
 
 # Основная модель, 10 эпох (~50 минут)
-poetry run python3 run_training_patched.py ++command=train model=efficientnet train.max_epochs=10
+poetry run python3 scripts/run_training_patched.py ++command=train model=efficientnet train.max_epochs=10
 
 # С кастомными гиперпараметрами
-poetry run python3 run_training_patched.py ++command=train model=efficientnet \
+poetry run python3 scripts/run_training_patched.py ++command=train model=efficientnet \
   train.max_epochs=5 optim.lr=1e-4 train.batch_size=16
 ```
 
 **Что происходит при обучении:**
+
 - Используется PyTorch Lightning для управления обучением
 - Логируются метрики в MLflow: loss, accuracy, f1-macro, per-class F1
 - Сохраняются checkpoints лучшей модели в `artifacts/checkpoints/`
@@ -258,6 +275,7 @@ poetry run python3 run_training_patched.py ++command=train model=efficientnet \
 - Early stopping при отсутствии улучшений на валидации
 
 **Выходные артефакты:**
+
 - `artifacts/checkpoints/baseline-best.ckpt` (ResNet-18)
 - `artifacts/checkpoints/efficientnet-best-v2.ckpt` (EfficientNet-B2)
 
@@ -268,6 +286,7 @@ poetry run python3 scripts/check_system.py
 ```
 
 Проверяет:
+
 - Датасет (количество классов и изображений)
 - Обученные checkpoints (baseline и efficientnet)
 - ONNX модели
@@ -292,12 +311,12 @@ dvc push -r models-storage
 
 ```bash
 # На папке с изображениями
-poetry run python3 run_training_patched.py ++command=infer \
+poetry run python3 scripts/run_training_patched.py ++command=infer \
   infer.input_dir=data/raw/biological \
   infer.output_csv=predictions.csv
 
 # С кастомным checkpoints
-poetry run python3 run_training_patched.py ++command=infer \
+poetry run python3 scripts/run_training_patched.py ++command=infer \
   infer.checkpoint_path=artifacts/checkpoints/baseline-best.ckpt \
   infer.input_dir=data/raw/biological
 
@@ -306,6 +325,7 @@ poetry run python3 scripts/test_inference.py
 ```
 
 **Выход:** `predictions.csv` с колонками:
+
 ```
 image_path,predicted_class,confidence
 data/raw/biological/bio1.jpg,biological,0.987
@@ -373,30 +393,30 @@ docker run --rm -p 8000:8000 -p 8001:8001 -p 8002:8002 \
 
 ### На реальных данных (15,515 изображений)
 
-| Метрика | Baseline (ResNet-18) | Main (EfficientNet-B2) |
-|---------|----------------------|------------------------|
-| Test Accuracy | 85.5% | 95.1% |
-| Test F1-macro | 85.8% | 94.4% |
-| Val F1-macro | 86.8% | 95.5% |
-| Inference Time | 50ms | 50ms |
-| Model Size | 128 MB | 89 MB |
-| ONNX Size | 0.15 MB | 1.46 MB |
-| Compression | 853× | 61× |
+| Метрика        | Baseline (ResNet-18) | Main (EfficientNet-B2) |
+| -------------- | -------------------- | ---------------------- |
+| Test Accuracy  | 85.5%                | 95.1%                  |
+| Test F1-macro  | 85.8%                | 94.4%                  |
+| Val F1-macro   | 86.8%                | 95.5%                  |
+| Inference Time | 50ms                 | 50ms                   |
+| Model Size     | 128 MB               | 89 MB                  |
+| ONNX Size      | 0.15 MB              | 1.46 MB                |
+| Compression    | 853×                 | 61×                    |
 
 ### По классам (EfficientNet-B2)
 
-| Класс | F1 | Уровень |
-|-------|-----|---------|
+| Класс      | F1   | Уровень  |
+| ---------- | ---- | -------- |
 | biological | 0.96 | Отличный |
-| cardboard | 0.95 | Отличный |
-| clothes | 0.98 | Отличный |
-| glass | 0.92 | Хороший |
-| metals | 0.88 | Хороший |
-| paper | 0.94 | Отличный |
-| plastic | 0.92 | Хороший |
-| shoes | 0.96 | Отличный |
-| trash | 0.90 | Хороший |
-| unknown | 0.91 | Хороший |
+| cardboard  | 0.95 | Отличный |
+| clothes    | 0.98 | Отличный |
+| glass      | 0.92 | Хороший  |
+| metals     | 0.88 | Хороший  |
+| paper      | 0.94 | Отличный |
+| plastic    | 0.92 | Хороший  |
+| shoes      | 0.96 | Отличный |
+| trash      | 0.90 | Хороший  |
+| unknown    | 0.91 | Хороший  |
 
 ---
 

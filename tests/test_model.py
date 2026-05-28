@@ -14,28 +14,28 @@ class TestModels:
         return torch.randn(2, 3, 224, 224)
 
     def test_baseline_output_shape(self, dummy_input: torch.Tensor) -> None:
-        model = BaselineResNet18(num_classes=12, pretrained=False)
+        model = BaselineResNet18(num_classes=10, pretrained=False)
         model.eval()
         with torch.no_grad():
             out = model(dummy_input)
-        assert out.shape == (2, 12)
+        assert out.shape == (2, 10)
 
     def test_efficientnet_output_shape(self, dummy_input: torch.Tensor) -> None:
-        model = EfficientNetB2(num_classes=12, pretrained=False, dropout=0.3)
+        model = EfficientNetB2(num_classes=10, pretrained=False, dropout=0.3)
         model.eval()
         with torch.no_grad():
             out = model(dummy_input)
-        assert out.shape == (2, 12)
+        assert out.shape == (2, 10)
 
     def test_baseline_gradients(self, dummy_input: torch.Tensor) -> None:
-        model = BaselineResNet18(num_classes=12, pretrained=False)
+        model = BaselineResNet18(num_classes=10, pretrained=False)
         out = model(dummy_input)
         loss = out.sum()
         loss.backward()
         assert model.backbone.fc.weight.grad is not None
 
     def test_efficientnet_gradients(self, dummy_input: torch.Tensor) -> None:
-        model = EfficientNetB2(num_classes=12, pretrained=False)
+        model = EfficientNetB2(num_classes=10, pretrained=False)
         out = model(dummy_input)
         loss = out.sum()
         loss.backward()
@@ -61,8 +61,8 @@ class TestTransforms:
 
 
 class TestClassMapping:
-    def test_twelve_classes(self) -> None:
-        assert len(CLASSES) == 12
+    def test_ten_classes(self) -> None:
+        assert len(CLASSES) == 10
 
     def test_classes_sorted(self) -> None:
         assert CLASSES == sorted(CLASSES)

@@ -135,8 +135,12 @@ data/raw/
 artifacts/checkpoints/
 artifacts/*.onnx
 artifacts/*.onnx.data
+artifacts/*.json
 outputs/
-plots/
+
+# Triton model binaries
+triton_repo/**/*.onnx
+triton_repo/**/*.onnx.data
 
 # DVC
 /dvc-storage/
