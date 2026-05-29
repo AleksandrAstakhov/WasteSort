@@ -85,8 +85,15 @@ def ensure_data() -> None:
     poetry("python", "scripts/download_data.py")
     ok("Data downloaded from Kaggle")
 
-    subprocess.run(["poetry", "run", "dvc", "add", "data/raw/"], cwd=ROOT, check=False)
-    subprocess.run(["poetry", "run", "dvc", "push", "-r", "data-storage"], cwd=ROOT, check=False)
+    dvc_yaml = ROOT / "dvc.yaml"
+    if dvc_yaml.exists():
+        subprocess.run(
+            ["poetry", "run", "dvc", "commit", "dvc.yaml", "--force"],
+            cwd=ROOT, check=False, capture_output=True,
+        )
+    else:
+        subprocess.run(["poetry", "run", "dvc", "add", "data/raw/"], cwd=ROOT, check=False, capture_output=True)
+    subprocess.run(["poetry", "run", "dvc", "push", "-r", "data-storage"], cwd=ROOT, check=False, capture_output=True)
     ok("Data tracked with DVC")
 
 

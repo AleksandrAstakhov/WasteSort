@@ -121,7 +121,7 @@ def main():
         print("Mapped battery unknown")
 
     classes = len(list(dst.iterdir()))
-    images = sum(len(list((dst / d).glob("*.jpg"))) for d in dst.iterdir() if d.is_dir())
+    images = sum(len(list(d.glob("*.jpg"))) for d in dst.iterdir() if d.is_dir())
 
     shutil.move(str(dst / "metal"), str(dst / "metals"))
 

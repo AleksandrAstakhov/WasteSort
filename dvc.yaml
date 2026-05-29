@@ -1,7 +1,7 @@
 stages:
   get_data:
-    cmd: bash scripts/download_data.sh data/raw
+    cmd: python scripts/download_data.py
     deps:
-      - scripts/download_data.sh
+      - scripts/download_data.py
     outs:
       - data/raw
