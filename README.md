@@ -354,7 +354,7 @@ cp artifacts/model.onnx.data triton_repo/waste_sort/1/model.onnx.data
 # Запустить Triton (в отдельном терминале)
 docker run --rm -p 8000:8000 -p 8001:8001 -p 8002:8002 \
   -v $(pwd)/triton_repo:/models \
-  nvcr.io/nvidia/tritonserver:latest \
+  nvcr.io/nvidia/tritonserver:24.07-py3 \
   tritonserver --model-repository=/models
 
 # Проверить здоровье
@@ -383,7 +383,7 @@ cp artifacts/model.onnx triton_repo/waste_sort/1/model.onnx
 # Ctrl+C в терминале с Triton, потом:
 docker run --rm -p 8000:8000 -p 8001:8001 -p 8002:8002 \
   -v $(pwd)/triton_repo:/models \
-  nvcr.io/nvidia/tritonserver:latest \
+  nvcr.io/nvidia/tritonserver:24.07-py3 \
   tritonserver --model-repository=/models
 ```
 

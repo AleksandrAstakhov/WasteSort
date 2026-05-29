@@ -168,6 +168,10 @@ plots/*.jpg
 outputs/
 .hydra/
 
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+
 # Triton
 *.pb
 *.pbtext
