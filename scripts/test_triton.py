@@ -77,7 +77,7 @@ def test_triton():
                 confidence = float(probs[predicted_idx])
 
                 is_correct = predicted_class == expected
-                status = "ок" if is_correct else "not ok"
+                status = "ok" if is_correct else "not ok"
                 print(f"{status} {img_path.name:25}  {predicted_class:12} ({confidence:.4f})")
                 if is_correct:
                     correct += 1
