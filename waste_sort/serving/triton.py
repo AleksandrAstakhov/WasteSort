@@ -20,7 +20,7 @@ output [
   {{
     name: "output"
     data_type: TYPE_FP32
-    dims: [ 12 ]
+    dims: [ {num_classes} ]
   }}
 ]
 
@@ -39,6 +39,7 @@ def build_triton_repo(
     model_name: str = "waste_sort",
     max_batch_size: int = 8,
     image_size: int = 224,
+    num_classes: int = 10,
 ) -> Path:
     """Create a Triton model repository from an ONNX model.
 
@@ -61,6 +62,7 @@ def build_triton_repo(
         model_name=model_name,
         max_batch_size=max_batch_size,
         image_size=image_size,
+        num_classes=num_classes,
     )
     (model_dir / "config.pbtxt").write_text(config_text)
 

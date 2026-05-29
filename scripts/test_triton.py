@@ -69,11 +69,12 @@ def test_triton():
                 if len(logits.shape) > 1:
                     logits = logits.flatten()
 
-                predicted_idx = np.argmax(logits[: len(CLASSES)])
+                logits = logits[: len(CLASSES)]
+                predicted_idx = np.argmax(logits)
                 predicted_class = CLASSES[predicted_idx]
-                confidence = float(
-                    np.exp(logits[predicted_idx]) / np.exp(logits[: len(CLASSES)]).sum()
-                )
+                shifted = logits - logits.max()
+                probs = np.exp(shifted) / np.exp(shifted).sum()
+                confidence = float(probs[predicted_idx])
 
                 is_correct = predicted_class == expected
                 status = "ок" if is_correct else "not ok"

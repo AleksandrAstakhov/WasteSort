@@ -16,10 +16,10 @@ def init_mlflow_run(
     mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment(experiment_name)
 
-    with mlflow.start_run(run_name=run_name, tags=tags or {}) as run:
-        run_id = run.info.run_id
-        print(f"MLflow run started: {run_name} (ID: {run_id})")
-        return run_id
+    run = mlflow.start_run(run_name=run_name, tags=tags or {})
+    run_id = run.info.run_id
+    print(f"MLflow run started: {run_name} (ID: {run_id})")
+    return run_id
 
 
 def log_data_preparation(

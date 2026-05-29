@@ -148,6 +148,13 @@ triton_repo/**/*.onnx.data
 # MLflow
 .mlflow/
 mlruns/
+mlartifacts/
+mlflow.db
+mlruns.db
+
+# Generated plots
+plots/*.png
+plots/*.jpg
 
 # Pre-commit
 .pre-commit-config.yaml~

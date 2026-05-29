@@ -48,6 +48,7 @@ def export_to_onnx(
             "input": {0: "batch_size"},
             "output": {0: "batch_size"},
         },
+        dynamo=False,
     )
 
     print(f"ONNX model exported to {out}")
