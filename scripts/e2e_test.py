@@ -62,13 +62,16 @@ def ensure_data() -> None:
         dvc_storage.mkdir(parents=True, exist_ok=True)
         subprocess.run(
             ["poetry", "run", "dvc", "remote", "add", "-d", "data-storage", str(dvc_storage)],
-            cwd=ROOT, capture_output=True,
+            cwd=ROOT,
+            capture_output=True,
         )
 
     print("  Trying dvc pull...")
     result = subprocess.run(
         ["poetry", "run", "dvc", "pull"],
-        cwd=ROOT, capture_output=True, text=True,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
     )
     if result.returncode == 0 and data_dir.exists() and len(list(data_dir.iterdir())) >= 10:
         ok("Data pulled via DVC")
@@ -89,11 +92,20 @@ def ensure_data() -> None:
     if dvc_yaml.exists():
         subprocess.run(
             ["poetry", "run", "dvc", "commit", "dvc.yaml", "--force"],
-            cwd=ROOT, check=False, capture_output=True,
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
         )
     else:
-        subprocess.run(["poetry", "run", "dvc", "add", "data/raw/"], cwd=ROOT, check=False, capture_output=True)
-    subprocess.run(["poetry", "run", "dvc", "push", "-r", "data-storage"], cwd=ROOT, check=False, capture_output=True)
+        subprocess.run(
+            ["poetry", "run", "dvc", "add", "data/raw/"], cwd=ROOT, check=False, capture_output=True
+        )
+    subprocess.run(
+        ["poetry", "run", "dvc", "push", "-r", "data-storage"],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+    )
     ok("Data tracked with DVC")
 
 
@@ -101,9 +113,11 @@ def check_mlflow() -> None:
     step("3 / 7  MLflow check")
 
     result = poetry(
-        "python", "-c",
+        "python",
+        "-c",
         "import mlflow; print(mlflow.__version__)",
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     if result.returncode != 0:
         fail(f"MLflow not importable: {result.stderr.strip()}")
@@ -114,12 +128,14 @@ def check_mlflow() -> None:
 
     db_uri = f"sqlite:///{ROOT}/mlruns.db"
     result = poetry(
-        "python", "-c",
+        "python",
+        "-c",
         f"import mlflow; mlflow.set_tracking_uri('{db_uri}'); "
         "mlflow.set_experiment('e2e_check'); "
         "run = mlflow.start_run(); mlflow.log_metric('ok', 1); mlflow.end_run(); "
         "print('tracking ok')",
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     if result.returncode != 0:
         fail(f"MLflow tracking failed: {result.stderr.strip()}")
@@ -133,7 +149,8 @@ def train_one_epoch() -> None:
 
     db_uri = f"sqlite:///{ROOT}/mlruns.db"
     poetry(
-        "python", "scripts/run_training_patched.py",
+        "python",
+        "scripts/run_training_patched.py",
         "++command=train",
         "model=efficientnet",
         "train.max_epochs=1",
@@ -164,6 +181,7 @@ def export_and_infer_onnx() -> None:
     import numpy as np
     import onnxruntime as ort
     from PIL import Image
+
     from waste_sort.data.dataset import CLASSES, IMAGENET_MEAN, IMAGENET_STD
 
     sess = ort.InferenceSession(str(onnx_path))
@@ -227,14 +245,22 @@ def start_and_test_triton() -> None:
 
     _triton_proc = subprocess.Popen(
         [
-            "docker", "run", "--rm",
-            "--name", TRITON_CONTAINER,
-            "-p", f"{TRITON_HTTP_PORT}:8000",
-            "-p", f"{TRITON_GRPC_PORT}:8001",
-            "-p", f"{TRITON_METRICS_PORT}:8002",
-            "-v", f"{ROOT}/triton_repo:/models",
+            "docker",
+            "run",
+            "--rm",
+            "--name",
+            TRITON_CONTAINER,
+            "-p",
+            f"{TRITON_HTTP_PORT}:8000",
+            "-p",
+            f"{TRITON_GRPC_PORT}:8001",
+            "-p",
+            f"{TRITON_METRICS_PORT}:8002",
+            "-v",
+            f"{ROOT}/triton_repo:/models",
             TRITON_IMAGE,
-            "tritonserver", "--model-repository=/models",
+            "tritonserver",
+            "--model-repository=/models",
         ],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
