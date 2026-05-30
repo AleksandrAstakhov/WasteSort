@@ -179,12 +179,8 @@ poetry shell
 ### Инициализировать DVC (один раз)
 
 ```bash
-# Создать локальное хранилище
-mkdir ../dvc-storage
-
-# Инициализировать DVC удалённые хранилища
-dvc remote add -d data-storage ../dvc-storage/data
-dvc remote add models-storage ../dvc-storage/models
+# Создать локальные хранилища
+mkdir -p ../dvc-storage/data ../dvc-storage/models
 ```
 
 ### Инициализировать pre-commit (один раз)
