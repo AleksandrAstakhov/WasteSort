@@ -232,10 +232,9 @@ poetry run python3 scripts/download_data.py
 ### 2. Добавить данные в DVC
 
 ```bash
-dvc add data/raw/
-git add data.dvc .gitignore
-git commit -m "Add dataset"
-dvc push -r data-storage
+poetry run dvc repro get_data
+poetry run dvc add data/raw
+poetry run dvc push
 ```
 
 ### 3. Запустить MLflow сервер (в отдельном терминале)
@@ -297,10 +296,8 @@ poetry run python3 scripts/check_system.py
 ### 6. Сохранить модели в DVC
 
 ```bash
-dvc add artifacts/checkpoints/ artifacts/model.onnx
-git add artifacts.dvc
-git commit -m "Add trained models"
-dvc push -r models-storage
+poetry run dvc add artifacts/checkpoints artifacts/model.onnx
+poetry run dvc push
 ```
 
 ---
@@ -467,16 +464,16 @@ pre-commit run ruff -a
 ### Data Management (DVC)
 
 ```bash
-# Скачать данные и модели
-dvc pull
+# Скачать данные из remote хранилища
+poetry run dvc pull
 
-# Загрузить в хранилище
-dvc add data/raw/ artifacts/
-dvc push
+# Загрузить данные в хранилище (первый раз)
+poetry run dvc repro get_data
+poetry run dvc add data/raw
+poetry run dvc push
 
 # Проверить статус
-dvc status
-dvc remote list
+poetry run dvc status
 ```
 
 ---
