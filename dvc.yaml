@@ -3,5 +3,3 @@ stages:
     cmd: python scripts/download_data.py
     deps:
       - scripts/download_data.py
-    outs:
-      - data/raw

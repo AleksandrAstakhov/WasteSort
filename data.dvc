@@ -1,8 +1,0 @@
-outs:
-- path: data/raw
-  hash: md5
-  md5:
-  size:
-  nfiles: 15515
-  desc: 'Kaggle garbage classification dataset - 15515 images in 10 classes'
-  remote: data-storage
